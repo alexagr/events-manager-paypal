@@ -96,6 +96,15 @@ class EM_Paypal_Emails {
                 }
                 $replace = $replace . "E-mail : " . $EM_Booking->get_person()->user_email . "\n";
                 $replace = $replace . "Phone : " . $EM_Booking->get_person()->phone . "\n";
+                if (!empty($EM_Booking->booking_meta['registration']['dbem_address'])) {
+                    $replace = $replace . "Address : " . $EM_Booking->booking_meta['registration']['dbem_address'] . "\n";
+                }
+                if (!empty($EM_Booking->booking_meta['registration']['dbem_city'])) {
+                    $replace = $replace . "City : " . $EM_Booking->booking_meta['registration']['dbem_city'] . "\n";
+                }
+                if (!empty($EM_Booking->booking_meta['registration']['dbem_country'])) {
+                    $replace = $replace . "Country : " . $EM_Booking->booking_meta['registration']['dbem_country'] . "\n";
+                }
                 if (!empty($EM_Booking->booking_meta['booking'])) {
                 	$EM_Form = EM_Booking_Form::get_form($EM_Booking->event_id);
             		foreach ($EM_Form->form_fields as $fieldid => $field) {
