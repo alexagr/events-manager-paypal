@@ -72,14 +72,17 @@ class EM_Paypal_IPN {
             //booking exists
             $EM_Booking->manage_override = true; //since we're overriding the booking ourselves.
 
+            $price = $EM_Booking->get_price();
+            $price = floor($price);
+            
             switch ($status) {
                 case 'Completed':
                 case 'Processed':
                     self::record_transaction($EM_Booking, $amount, $currency, $timestamp, $txn_id, $status);
-                    if ($amount >= $EM_Booking->get_price()) {
-                            $EM_Booking->set_status(1); // approve
+                    if ($amount >= $price) {
+                        $EM_Booking->set_status(1); // approve
                     } else {
-                            $EM_Booking->set_status(0); // pending
+                        $EM_Booking->set_status(0, false); // pending
                     }
                     break;
 
@@ -91,10 +94,10 @@ class EM_Paypal_IPN {
 
                 case 'Refunded':
                     self::record_transaction($EM_Booking, $amount, $currency, $timestamp, $txn_id, $status);
-                    if ($EM_Booking->get_price() >= $amount) {
+                    if ($price >= $amount) {
                         $EM_Booking->cancel();
                     } else {
-                        $EM_Booking->set_status(0); // pending
+                        $EM_Booking->set_status(0, false); // pending
                     }
                     break;
 

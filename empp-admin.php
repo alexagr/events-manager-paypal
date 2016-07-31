@@ -53,8 +53,10 @@ class EM_Paypal_Admin {
         <div class="inside">
             <table class='form-table'>
                 <?php
-                    em_options_input_text ( __( 'PayPal Email', 'em-paypal' ), 'dbem_paypail_email', '' );
-                    em_options_select ( __( 'PayPal Mode', 'em-paypal' ), 'dbem_paypail_status', array ('live' => 'Live Site', 'test' => 'Test Mode (Sandbox)'), '' );                                      
+                    em_options_input_text ( __( 'PayPal Email', 'em-paypal' ), 'dbem_paypal_email', '' );
+                    em_options_select ( __( 'PayPal Mode', 'em-paypal' ), 'dbem_paypal_status', array ('live' => 'Live Site', 'test' => 'Test Mode (Sandbox)'), '' );                                      
+                    em_options_input_text ( __( 'Paypal Payment Page', 'em-paypal' ), 'dbem_payment_page', '' );
+                    em_options_input_text ( __( 'Paypal Payment Already Done Page', 'em-paypal' ), 'dbem_payment_already_done_page', '' );
                 ?>
             </table>
         </div> <!-- . inside -->
