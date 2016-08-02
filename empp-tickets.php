@@ -22,7 +22,6 @@ class EM_Paypal_Tickets {
                         <th><?php esc_html_e('Price','events-paypal'); ?></th>
                         <th><?php esc_html_e('Pending Spaces','events-paypal'); ?></th>
                         <th><?php esc_html_e('Booked Spaces','events-paypal'); ?></th>
-                        <th><?php esc_html_e('Available Spaces','events-paypal'); ?></th>
                         <th>&nbsp;</th>
                     </tr>
                 </thead>    
@@ -35,7 +34,6 @@ class EM_Paypal_Tickets {
                                 <td class="ticket-status"><span class="<?php if($EM_Ticket->ticket_id && $EM_Ticket->is_available()){ echo 'ticket_on'; }elseif($EM_Ticket->ticket_id > 0){ echo 'ticket_off'; }else{ echo 'ticket_new'; } ?>"></span></td>                                                 
                                 <td class="ticket-name">
                                     <span class="ticket_name"><?php if($EM_Ticket->ticket_members) echo '* ';?><?php echo wp_kses_data($EM_Ticket->ticket_name); ?></span>
-                                    <div class="ticket_description"><?php echo wp_kses($EM_Ticket->ticket_description,$allowedposttags); ?></div>
                                 </td>
                                 <td class="ticket-price">
                                     <span class="ticket_price"><?php echo ($EM_Ticket->ticket_price) ? esc_html($EM_Ticket->get_price_precise()) : esc_html__('Free','events-manager'); ?></span>
@@ -45,9 +43,6 @@ class EM_Paypal_Tickets {
                                 </td>
                                 <td class="ticket-booked-spaces">
                                     <span class="ticket_booked_spaces"><?php echo $EM_Ticket->get_booked_spaces(); ?></span>
-                                </td>
-                                <td class="ticket-available-spaces">
-                                    <span class="ticket_available_spaces"><?php echo $EM_Ticket->get_available_spaces(); ?></span>
                                 </td>
                             </tr>
                         </tbody>
