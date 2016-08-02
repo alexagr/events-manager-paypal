@@ -38,6 +38,7 @@ class EM_Paypal {
         include('empp-ipn.php');
         include('empp-discount.php');
         include('empp-misc.php');
+        include('empp-tickets.php');
         // include('empp-limmud.php');
     }
         
