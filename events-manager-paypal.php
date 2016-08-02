@@ -38,6 +38,7 @@ class EM_Paypal {
         include('empp-ipn.php');
         include('empp-discount.php');
         include('empp-misc.php');
+        // include('empp-limmud.php');
     }
         
 
@@ -55,5 +56,17 @@ class EM_Paypal {
 }
 
 add_action('plugins_loaded', 'EM_Paypal::init');
+
+
+register_activation_hook(__FILE__, 'empp_activation');
+register_deactivation_hook(__FILE__,'empp_deactivation');
+
+function empp_activation() {
+    wp_schedule_event(time(), 'hourly', 'empp_hourly_hook');
+}
+
+function empp_deactivation() {
+    wp_clear_scheduled_hook('empp_hourly_hook');
+}
 
 ?>

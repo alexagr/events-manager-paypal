@@ -80,9 +80,7 @@ class EM_Paypal_IPN {
                 case 'Processed':
                     self::record_transaction($EM_Booking, $amount, $currency, $timestamp, $txn_id, $status);
                     if ($amount >= $price) {
-                        $EM_Booking->set_status(1); // approve
-                    } else {
-                        $EM_Booking->set_status(0, false); // pending
+                        $EM_Booking->approve();
                     }
                     break;
 
@@ -96,8 +94,6 @@ class EM_Paypal_IPN {
                     self::record_transaction($EM_Booking, $amount, $currency, $timestamp, $txn_id, $status);
                     if ($price >= $amount) {
                         $EM_Booking->cancel();
-                    } else {
-                        $EM_Booking->set_status(0, false); // pending
                     }
                     break;
 

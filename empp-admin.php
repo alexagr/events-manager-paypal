@@ -28,6 +28,14 @@ class EM_Paypal_Admin {
                         em_options_input_text ( __( 'Awaiting payment email subject', 'em-paypal' ), 'dbem_bookings_contact_email_awaiting_payment_subject', $email_subject_tip );                 
                         em_options_textarea ( __( 'Awaiting payment email', 'em-paypal' ), 'dbem_bookings_contact_email_awaiting_payment_body', '' );
                     ?>
+                    <tr class="em-subheader"><td colspan='2'>
+                        <h5><?php _e('Waiting list email','dbem') ?></h5> 
+                        <em><?php echo __('This is sent when a person\'s booking is moved to Waiting List.','dbem') ?></em>
+                    </td></tr>
+                    <?php
+                        em_options_input_text ( __( 'Waiting list email subject', 'em-paypal' ), 'dbem_bookings_contact_email_waiting_list_subject', $email_subject_tip );                 
+                        em_options_textarea ( __( 'Waiting list email', 'em-paypal' ), 'dbem_bookings_contact_email_waiting_list_body', '' );
+                    ?>
                 <tr class="em-header"><td colspan='2'><h4><?php _e('Booked User Emails', 'dbem'); ?></h4></td></tr>
                     <tbody class="em-subsection">
                     <tr class="em-subheader"><td colspan='2'>
@@ -37,6 +45,14 @@ class EM_Paypal_Admin {
                     <?php
                         em_options_input_text ( __( 'Awaiting payment email subject', 'em-paypal' ), 'dbem_bookings_email_awaiting_payment_subject', $email_subject_tip );                 
                         em_options_textarea ( __( 'Awaiting payment email', 'em-paypal' ), 'dbem_bookings_email_awaiting_payment_body', '' );
+                    ?>
+                    <tr class="em-subheader"><td colspan='2'>
+                        <h5><?php _e('Waiting list email','dbem') ?></h5> 
+                        <em><?php echo __('This will be sent to the person when their booking is moved to Waiting List.','dbem') ?></em>
+                    </td></tr>
+                    <?php
+                        em_options_input_text ( __( 'Waiting list email subject', 'em-paypal' ), 'dbem_bookings_email_waiting_list_subject', $email_subject_tip );                 
+                        em_options_textarea ( __( 'Waiting list email', 'em-paypal' ), 'dbem_bookings_email_waiting_list_body', '' );
                     ?>
                 <?php echo $save_button; ?>
             </table>
@@ -77,6 +93,9 @@ class EM_Paypal_Admin {
                     em_options_input_text ( __( 'Spaces Name', 'em-paypal' ), 'dbem_spaces_name', '' );
                     em_options_select ( __( 'Count Admin Tickets', 'em-paypal' ), 'dbem_show_admin_tickets', array ('count' => 'Count', 'ignore' => 'Ignore'), '' );                                      
                     em_options_select ( __( 'Show Event Details', 'em-paypal' ), 'dbem_show_event_details', array ('show' => 'Show', 'hide' => 'Hide'), '' );                                      
+                    em_options_select ( __( 'Admin Actions', 'em-paypal' ), 'dbem_admin_actions', array ('all' => 'Show All', 'edit' => 'Edit/View Only'), '' );                                      
+                    em_options_select ( __( 'Show Online Payment', 'em-paypal' ), 'dbem_hide_online_payment', array ('show' => 'Show', 'hide' => 'Hide'), '' );                                      
+                    em_options_select ( __( 'Days For Payment', 'em-paypal' ), 'dbem_days_for_payment', array ('0' => 'Unlimited', '1' => '1 Day', '2' => '2 Days', '3' => '3 Days', '4' => '4 Days'), '' );                                      
                 ?>
             </table>
         </div> <!-- . inside -->

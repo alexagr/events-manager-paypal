@@ -15,6 +15,13 @@ class EM_Paypal_Emails {
             $msg['admin']['subject'] = get_option('dbem_bookings_contact_email_awaiting_payment_subject');
             $msg['admin']['body'] = get_option('dbem_bookings_contact_email_awaiting_payment_body');
         }
+        if ($EM_Booking->booking_status == 6) {
+            $msg['user']['subject'] = get_option('dbem_bookings_email_waiting_list_subject');
+            $msg['user']['body'] = get_option('dbem_bookings_email_waiting_list_body');
+            //admins should get something (if set to)
+            $msg['admin']['subject'] = get_option('dbem_bookings_contact_email_waiting_list_subject');
+            $msg['admin']['body'] = get_option('dbem_bookings_contact_email_waiting_list_body');
+        }
         return $msg;
     }
     
