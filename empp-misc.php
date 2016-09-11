@@ -10,6 +10,7 @@ class EM_Paypal_Misc {
         add_action('em_booking', array(__CLASS__, 'em_booking'), 10, 2);
         add_filter('em_booking_set_status', array(__CLASS__, 'em_booking_set_status'), 10, 2);
         add_action('empp_hourly_hook', array(__CLASS__, 'empp_hourly_hook'));
+        add_action('em_bookings_table',array(__CLASS__,'em_bookings_table'),11,1);
     }
 
     public static function em_booking_form_tickets_cols($collumns, $EM_Event) { 
@@ -114,6 +115,13 @@ class EM_Paypal_Misc {
             $EM_Booking->add_note('Waiting List');
         }
         return $result;
+    }
+
+    static function em_bookings_table($EM_Bookings_Table){
+        $EM_Bookings_Table->statuses['waiting-list'] = array('label'=>'Waiting List', 'search'=>6);
+        unset($EM_Bookings_Table->statuses['awaiting-online']);
+		$EM_Bookings_Table->statuses['awaiting-payment'] = array('label'=>'Awaiting Payment', 'search'=>5);
+		$EM_Bookings_Table->status = ( !empty($_REQUEST['status']) && array_key_exists($_REQUEST['status'], $EM_Bookings_Table->statuses) ) ? $_REQUEST['status']:get_option('dbem_default_bookings_search','needs-attention');
     }
     
     public static function empp_hourly_hook() {

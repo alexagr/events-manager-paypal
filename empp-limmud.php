@@ -34,6 +34,7 @@ class EM_Paypal_Limmud {
                 var accomodation_element = document.getElementsByName("accomodation_type")[0];
                 var transportation_element = document.getElementsByName("bus_needed")[0];
                 var volunteer_element = document.getElementsByName("participant_role")[0];
+                var student_element = document.getElementsByName("discount_student")[0];
 
                 if (parents == NaN) { parents = 0; }
                 if (teenagers == NaN) { teenagers = 0; }
@@ -45,6 +46,7 @@ class EM_Paypal_Limmud {
                 // init
                 var room_3_adult = 0;
                 var room_2_adult = 0;
+                var room_1_adult = 0;
                 var room_2_adult_1_kid = 0;
                 var room_2_adult_2_kid = 0;
                 var room_1_adult_1_kid = 0;
@@ -61,6 +63,7 @@ class EM_Paypal_Limmud {
                 var comment = "";
                 var transportation = 0;
                 var volunteer_discount = 0;
+                var student_discount = 0;
 
                 if (accomodation_element.selectedIndex == 1) {
                     // self accomodation - 1 night
@@ -76,9 +79,11 @@ class EM_Paypal_Limmud {
                     if (e.selectedIndex == 1) {
                         room_3_adult = ~~(adults / 3);
                         place_in_triple_room = adults - (room_3_adult * 3);
-                    } else {
+                    } else if (e.selectedIndex == 0) {
                         room_2_adult = ~~(adults / 2);
                         place_in_double_room = adults - (room_2_adult * 2);
+                    } else {
+                        room_1_adult = 1;
                     }
                 }
                 else if (adults == 1) {
@@ -159,6 +164,10 @@ class EM_Paypal_Limmud {
                 if (volunteer_element.selectedIndex != 0) {
                     volunteer_discount = 1;
                 }
+
+                if (student_element.selectedIndex != 0) {
+                    student_discount = 1;
+                }
                 
                 // update form
                 document.getElementsByName("em_tickets[97][spaces]")[0].value = place_in_double_room;
@@ -170,6 +179,7 @@ class EM_Paypal_Limmud {
                 document.getElementsByName("em_tickets[103][spaces]")[0].value = room_2_adult_1_kid; 
                 document.getElementsByName("em_tickets[104][spaces]")[0].value = room_2_adult_2_kid;
                 document.getElementsByName("em_tickets[111][spaces]")[0].value = room_3_adult; 
+                document.getElementsByName("em_tickets[138][spaces]")[0].value = room_1_adult; 
 
                 document.getElementsByName("em_tickets[105][spaces]")[0].value = ticket_3_night_adult;
                 document.getElementsByName("em_tickets[106][spaces]")[0].value = ticket_1_night_adult;
@@ -178,6 +188,7 @@ class EM_Paypal_Limmud {
 
                 document.getElementsByName("em_tickets[112][spaces]")[0].value = transportation;
                 document.getElementsByName("em_tickets[113][spaces]")[0].value = volunteer_discount;
+                document.getElementsByName("em_tickets[110][spaces]")[0].value = student_discount;
                 
                 var delim = "\n--------------------\n"; 
                 var c = document.getElementById("dbem_comment").value;
@@ -218,17 +229,41 @@ class EM_Paypal_Limmud {
             var teenagers = document.getElementsByName("em_tickets[82][spaces]")[0];
             var kids = document.getElementsByName("em_tickets[83][spaces]")[0];
             var accomodation = document.getElementsByName("accomodation_type")[0];
+            var participant = document.getElementsByName("participant_role")[0];
+
+            if (accomodation.selectedIndex > 0) {
+                document.getElementsByName("shabbat_area")[0].style.display = "none";
+                $('label[for="shabbat_area"]').hide();
+                document.getElementsByName("bus_needed")[0].style.display = "none";
+                $('label[for="bus_needed"]').hide();
+            } else {
+                document.getElementsByName("shabbat_area")[0].style.display = "inline-block";
+                $('label[for="shabbat_area"]').show();
+                document.getElementsByName("bus_needed")[0].style.display = "inline-block";
+                $('label[for="bus_needed"]').show();
+            }
 
             if ((accomodation.selectedIndex > 0) || (kids.selectedIndex > 0) || ((parents.selectedIndex + teenagers.selectedIndex) > 2)) {
                 document.getElementsByName("room_type")[0].style.display = "none";
                 $('label[for="room_type"]').hide();
                 document.getElementsByName("room_mate")[0].style.display = "none";
                 $('label[for="room_mate"]').hide();
+                document.getElementsByName("discount_student")[0].style.display = "none";
+                $('label[for="discount_student"]').hide();
             } else {
                 document.getElementsByName("room_type")[0].style.display = "inline-block";
                 $('label[for="room_type"]').show();
                 document.getElementsByName("room_mate")[0].style.display = "inline-block";
                 $('label[for="room_mate"]').show();
+                document.getElementsByName("discount_student")[0].style.display = "inline-block";
+                $('label[for="discount_student"]').show();
+            }
+
+            // 1st registration - for regular people only
+            if (participant.selectedIndex > 0) {
+                document.getElementById("em-booking-submit").style.display = "none";
+            } else {
+                document.getElementById("em-booking-submit").style.display = "inline-block";
             }
         }).change();
     <?php
