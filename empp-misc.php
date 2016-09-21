@@ -129,26 +129,35 @@ class EM_Paypal_Misc {
         if ($diffdays == 0) {
             return;
         }
-    
+
         $events = EM_Events::get(array('scope'=>'future'));
         foreach ($events as $EM_Event) {
             foreach ($EM_Event->get_bookings()->bookings as $EM_Booking) {
                 if ($EM_Booking->booking_status == 5) {
+                    // EM_Pro::log('#'.$EM_Booking->booking_id.' email='.$EM_Booking->get_person()->user_email, 'general', True);
                     $date1 = date_create();
                     $date2 = date_create();
                     foreach ($EM_Booking->get_notes() as $note) {
                         if ($note['note'] == 'Awaiting Payment') {
                             date_timestamp_set($date1, $note['timestamp']);
+                            // EM_Pro::log('timestamp '. date(DATE_ATOM, $note['timestamp']), 'general', True);                    
                         }
                     }
+                    $diffdays = intval(get_option('dbem_days_for_payment', '0'));
                     $weekday = intval(date_format($date1, "w"));
                     if ($weekday > (4 - $diffdays)) {
                         $diffdays += 2;
                     } 
                     $diff = date_diff($date1, $date2);
-                    if ($diff->d > $diffdays) {
+                    if ($diff->d >= $diffdays) {
                         $EM_Booking->set_status(6);
                     }
+                    /*
+                    EM_Pro::log('d='.$diff->d.' diffdays='.$diffdays, 'general', True);                    
+                    if ($diff->d == ($diffdays - 1)) {
+                        EM_Pro::log('Payment date expires today for #'.$EM_Booking->booking_id.' email='.$EM_Booking->get_person()->user_email, "general", True);                    
+                    }
+                    */
                 }
             }
         }

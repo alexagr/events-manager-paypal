@@ -40,6 +40,7 @@ class EM_Paypal {
         include('empp-misc.php');
         include('empp-tickets.php');
         // include('empp-limmud.php');
+        include('empp-secret.php');
     }
         
 

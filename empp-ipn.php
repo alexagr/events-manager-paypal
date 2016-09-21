@@ -89,14 +89,14 @@ class EM_Paypal_IPN {
                     self::record_transaction($EM_Booking, $amount, $currency, $timestamp, $txn_id, $status);
                     $EM_Booking->cancel();
                     break;
-
+                /*
                 case 'Refunded':
                     self::record_transaction($EM_Booking, $amount, $currency, $timestamp, $txn_id, $status);
                     if ($price >= $amount) {
                         $EM_Booking->cancel();
                     }
                     break;
-
+                */
                 default:
             }
         }
