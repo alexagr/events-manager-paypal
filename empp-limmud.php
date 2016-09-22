@@ -74,7 +74,8 @@ class EM_Paypal_Limmud {
                 
                 var comment = "";
                 var transportation = 0;
-                var volunteer_discount = 0;
+                var volunteer_2_discount = 0;
+                var volunteer_3_discount = 0;
                 var student_discount = 0;
 
                 if (accomodation_element.selectedIndex == 1) {
@@ -182,7 +183,11 @@ class EM_Paypal_Limmud {
                 }
 
                 if (volunteer_element.selectedIndex != 0) {
-                    volunteer_discount = 1;
+                    if ((room_3_adult > 0) || (place_in_triple_room > 0)) {
+                        volunteer_3_discount = 1;
+                    } else {
+                        volunteer_2_discount = 1;
+                    }
                 }
 
                 if (student_element.selectedIndex != 0) {
@@ -208,7 +213,8 @@ class EM_Paypal_Limmud {
                     document.getElementsByName("em_tickets[108][spaces]")[0].value = ticket_1_night_kid;
     
                     document.getElementsByName("em_tickets[112][spaces]")[0].value = transportation;
-                    // document.getElementsByName("em_tickets[113][spaces]")[0].value = volunteer_discount;
+                    document.getElementsByName("em_tickets[113][spaces]")[0].value = volunteer_3_discount;
+                    document.getElementsByName("em_tickets[160][spaces]")[0].value = volunteer_2_discount;
                     document.getElementsByName("em_tickets[110][spaces]")[0].value = student_discount;
                 } else {
                     document.getElementsByName("em_tickets[151][spaces]")[0].value = place_in_double_room;
@@ -228,6 +234,8 @@ class EM_Paypal_Limmud {
                     document.getElementsByName("em_tickets[156][spaces]")[0].value = ticket_1_night_kid;
     
                     document.getElementsByName("em_tickets[157][spaces]")[0].value = transportation;
+                    document.getElementsByName("em_tickets[161][spaces]")[0].value = volunteer_3_discount;
+                    document.getElementsByName("em_tickets[162][spaces]")[0].value = volunteer_2_discount;
                     document.getElementsByName("em_tickets[159][spaces]")[0].value = student_discount;
                 }
                 
