@@ -30,24 +30,31 @@ class EM_Paypal_Limmud {
                 var teenagers = 0;
                 var kids = 0;
                 var toddlers = 0;
+                var self_accomodation = false;
                 
                 if (document.getElementsByName("em_tickets[81][spaces]")[0]) {
                     parents = parseInt(document.getElementsByName("em_tickets[81][spaces]")[0].value); 
                     teenagers = parseInt(document.getElementsByName("em_tickets[82][spaces]")[0].value);
                     kids = parseInt(document.getElementsByName("em_tickets[83][spaces]")[0].value);
                     toddlers = parseInt(document.getElementsByName("em_tickets[86][spaces]")[0].value);
-                } else {
+                } else if (document.getElementsByName("em_tickets[139][spaces]")[0]) {
                     parents = parseInt(document.getElementsByName("em_tickets[139][spaces]")[0].value); 
                     teenagers = parseInt(document.getElementsByName("em_tickets[140][spaces]")[0].value);
                     kids = parseInt(document.getElementsByName("em_tickets[141][spaces]")[0].value);
                     toddlers = parseInt(document.getElementsByName("em_tickets[142][spaces]")[0].value);
+                } else if (document.getElementsByName("em_tickets[186][spaces]")[0]) {
+                    parents = parseInt(document.getElementsByName("em_tickets[186][spaces]")[0].value); 
+                    teenagers = parseInt(document.getElementsByName("em_tickets[187][spaces]")[0].value);
+                    kids = parseInt(document.getElementsByName("em_tickets[188][spaces]")[0].value);
+                    toddlers = parseInt(document.getElementsByName("em_tickets[189][spaces]")[0].value);
+                    self_accomodation = true;
                 }
 
                 var accomodation_element = document.getElementsByName("accomodation_type")[0];
                 var transportation_element = document.getElementsByName("bus_needed")[0];
                 var volunteer_element = document.getElementsByName("participant_role")[0];
                 var student_element = document.getElementsByName("discount_student")[0];
-
+                
                 if (parents == NaN) { parents = 0; }
                 if (teenagers == NaN) { teenagers = 0; }
                 if (kids == NaN) { kids = 0; }
@@ -78,7 +85,17 @@ class EM_Paypal_Limmud {
                 var volunteer_3_discount = 0;
                 var student_discount = 0;
 
-                if (accomodation_element.selectedIndex == 1) {
+                if (self_accomodation) {
+                    if (accomodation_element.selectedIndex == 0) {
+                        // self accomodation - 3 nights
+                        ticket_3_night_adult = adults;
+                        ticket_3_night_kid = kids;
+                    } else {
+                        // self accomodation - 1 night
+                        ticket_1_night_adult = adults;
+                        ticket_1_night_kid = kids;
+                    }  
+                } else if (accomodation_element.selectedIndex == 1) {
                     // self accomodation - 1 night
                     ticket_1_night_adult = adults;
                     ticket_1_night_kid = kids;
@@ -178,20 +195,22 @@ class EM_Paypal_Limmud {
                     }
                 }
                 
-                if (transportation_element.selectedIndex != 0) {
-                    transportation = adults + kids;
-                }
-
-                if (volunteer_element.selectedIndex != 0) {
-                    if ((room_3_adult > 0) || (place_in_triple_room > 0)) {
-                        volunteer_3_discount = 1;
-                    } else {
-                        volunteer_2_discount = 1;
+                if (!self_accomodation) {
+                    if (transportation_element.selectedIndex != 0) {
+                        transportation = adults + kids;
                     }
-                }
-
-                if (student_element.selectedIndex != 0) {
-                    student_discount = 1;
+    
+                    if (volunteer_element.selectedIndex != 0) {
+                        if ((room_3_adult > 0) || (place_in_triple_room > 0)) {
+                            volunteer_3_discount = 1;
+                        } else {
+                            volunteer_2_discount = 1;
+                        }
+                    }
+    
+                    if (student_element.selectedIndex != 0) {
+                        student_discount = 1;
+                    }
                 }
                 
                 // update form
@@ -216,7 +235,7 @@ class EM_Paypal_Limmud {
                     document.getElementsByName("em_tickets[113][spaces]")[0].value = volunteer_3_discount;
                     document.getElementsByName("em_tickets[160][spaces]")[0].value = volunteer_2_discount;
                     document.getElementsByName("em_tickets[110][spaces]")[0].value = student_discount;
-                } else {
+                } else if (document.getElementsByName("em_tickets[139][spaces]")[0]) {
                     document.getElementsByName("em_tickets[151][spaces]")[0].value = place_in_double_room;
                     document.getElementsByName("em_tickets[152][spaces]")[0].value = place_in_triple_room;
                     document.getElementsByName("em_tickets[148][spaces]")[0].value = room_2_adult; 
@@ -237,6 +256,11 @@ class EM_Paypal_Limmud {
                     document.getElementsByName("em_tickets[161][spaces]")[0].value = volunteer_3_discount;
                     document.getElementsByName("em_tickets[162][spaces]")[0].value = volunteer_2_discount;
                     document.getElementsByName("em_tickets[159][spaces]")[0].value = student_discount;
+                } else if (document.getElementsByName("em_tickets[186][spaces]")[0]) {
+                    document.getElementsByName("em_tickets[191][spaces]")[0].value = ticket_3_night_adult;
+                    document.getElementsByName("em_tickets[192][spaces]")[0].value = ticket_1_night_adult;
+                    document.getElementsByName("em_tickets[193][spaces]")[0].value = ticket_3_night_kid;
+                    document.getElementsByName("em_tickets[194][spaces]")[0].value = ticket_1_night_kid;
                 }
                 
                 var delim = "\n--------------------\n"; 
@@ -285,6 +309,10 @@ class EM_Paypal_Limmud {
                 parents = document.getElementsByName("em_tickets[139][spaces]")[0]; 
                 teenagers = document.getElementsByName("em_tickets[140][spaces]")[0];
                 kids = document.getElementsByName("em_tickets[141][spaces]")[0];
+            }
+
+            if (parents == null) {
+                return;
             }
 
             if (accomodation.selectedIndex > 0) {

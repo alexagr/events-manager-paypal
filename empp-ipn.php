@@ -84,12 +84,13 @@ class EM_Paypal_IPN {
                     }
                     break;
 
+                /*
                 case 'Reversed':
                 case 'Denied':
                     self::record_transaction($EM_Booking, $amount, $currency, $timestamp, $txn_id, $status);
                     $EM_Booking->cancel();
                     break;
-                /*
+
                 case 'Refunded':
                     self::record_transaction($EM_Booking, $amount, $currency, $timestamp, $txn_id, $status);
                     if ($price >= $amount) {
