@@ -132,6 +132,9 @@ class EM_Paypal_Misc {
 
         $events = EM_Events::get(array('scope'=>'future'));
         foreach ($events as $EM_Event) {
+            if ($EM_Event->event_name == 'Limmud 2016 Private Registration') {
+                continue;
+            }
             foreach ($EM_Event->get_bookings()->bookings as $EM_Booking) {
                 if ($EM_Booking->booking_status == 5) {
                     // EM_Pro::log('#'.$EM_Booking->booking_id.' email='.$EM_Booking->get_person()->user_email, 'general', True);
@@ -153,11 +156,19 @@ class EM_Paypal_Misc {
                         $EM_Booking->set_status(6);
                     }
                     /*
-                    EM_Pro::log('d='.$diff->d.' diffdays='.$diffdays, 'general', True);                    
+                    EM_Pro::log('d='.$diff->d.' diffdays='.$diffdays, 'general', True);
+                    */
+                    
+                    /*                    
                     if ($diff->d == ($diffdays - 1)) {
-                        EM_Pro::log('Payment date expires today for #'.$EM_Booking->booking_id.' email='.$EM_Booking->get_person()->user_email, "general", True);                    
+                        EM_Pro::log('Payment date expires today for #'.$EM_Booking->booking_id.' email='.$EM_Booking->get_person()->user_email.' d='.$diff->d.' h='.$diff->h, "general", True);
+                    }
+                    
+                    if ($diff->d == ($diffdays - 2)) {
+                        EM_Pro::log('Payment date expires tomorrow for #'.$EM_Booking->booking_id.' email='.$EM_Booking->get_person()->user_email.' d='.$diff->d.' h='.$diff->h, "general", True);
                     }
                     */
+                    
                 }
             }
         }
