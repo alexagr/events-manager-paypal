@@ -6,7 +6,7 @@
 
 class EM_Paypal_CSV {
     public static function init() {
-        add_action('init', array(__CLASS__, 'intercept_csv_export'), 10); 
+        add_action('init', array(__CLASS__, 'intercept_csv_export'), 10);
         add_action('em_bookings_table_export_options', array(__CLASS__, 'em_bookings_table_export_options'), 11);
     }
 
@@ -14,8 +14,8 @@ class EM_Paypal_CSV {
         ?>
         <p>Limmud 2016 export <input type="checkbox" name="limmud_export" value="1" />
         <a href="#" title="Limmud 2016 specific export format">?</a>
-        <p>Limmud 2016 export (one-line) <input type="checkbox" name="limmud_export2" value="1" />
-        <a href="#" title="Limmud 2016 specific export format (one-line)">?</a>
+        <p>Limmud 2016 accomodation <input type="checkbox" name="limmud_accomodation" value="1" />
+        <a href="#" title="Limmud 2016 accomodation report">?</a>
         <?php
     }
 
@@ -73,12 +73,16 @@ class EM_Paypal_CSV {
                             $row[] = $EM_Form->get_formatted_value($EM_Form->form_fields['discount_student'], $EM_Booking->booking_meta['booking']['discount_student']);
                         }
                         $row[] = $EM_Form->get_formatted_value($EM_Form->form_fields['dbem_comment'], $EM_Booking->booking_meta['booking']['dbem_comment']);
-                         
+
                         if (!empty($attendees_data[$EM_Ticket_Booking->ticket_id])) {
                             foreach($attendees_data[$EM_Ticket_Booking->ticket_id] as $attendee_title => $attendee_data) {
                                 $full_row = $row;
                                 foreach( $attendee_data as $field_value) {
-                                    $full_row[] = $field_value;
+                                    if ($field_value != 'n/a') {
+                                        $full_row[] = $field_value;
+                                    } else {
+                                        $full_row[] = '';
+                                    }
                                 }
                                 fputcsv($handle, $full_row, $delimiter);
                             }
@@ -90,10 +94,10 @@ class EM_Paypal_CSV {
             exit();
         }
 
-        if( !empty($_REQUEST['action']) && $_REQUEST['action'] == 'export_bookings_csv' && !empty($_REQUEST['limmud_export2']) && wp_verify_nonce($_REQUEST['_wpnonce'], 'export_bookings_csv')) {
+        if( !empty($_REQUEST['action']) && $_REQUEST['action'] == 'export_bookings_csv' && !empty($_REQUEST['limmud_accomodation']) && wp_verify_nonce($_REQUEST['_wpnonce'], 'export_bookings_csv')) {
 
             header("Content-Type: application/octet-stream; charset=utf-8");
-            header("Content-Disposition: Attachment; filename=".sanitize_title(get_bloginfo())."-bookings-export2.csv");
+            header("Content-Disposition: Attachment; filename=".sanitize_title(get_bloginfo())."-bookings-accomodation.csv");
             do_action('em_csv_header_output');
             echo "\xEF\xBB\xBF"; // UTF-8 for MS Excel (a little hacky... but does the job)
 
@@ -101,9 +105,10 @@ class EM_Paypal_CSV {
             $delimiter = !defined('EM_CSV_DELIMITER') ? ',' : EM_CSV_DELIMITER;
             $delimiter = apply_filters('em_csv_delimiter', $delimiter);
 
-            $headers = array('id', 'name', 'email', 'status', 'event_name', 'ticket_name', 'ticket_price', 'phone', 'address', 'city', 'participant_role', 'accomodation_type', 'room_type', 'room_mate', 'shabbat_area', 'bus_needed', 'discount_student', 'dbem_comment', 'people');
+            $headers = array('room_id', 'room_type', 'order#', 'name', 'surname', 'birthday', 'toddlers', 'hotel', 'shabbat_area', 'role', 'status', 'room_mate', 'comment');
             fputcsv($handle, $headers, $delimiter);
 
+            $orders = array();
 
             $events = EM_Events::get(array('scope'=>'future'));
             foreach ($events as $EM_Event) {
@@ -111,58 +116,234 @@ class EM_Paypal_CSV {
                     continue;
                 }
                 foreach ($EM_Event->get_bookings()->bookings as $EM_Booking) {
+
+                    $order = array();
+                    $order['event'] = $EM_Event->event_name;
+                    $order['id'] = $EM_Booking->booking_id;
+                    $order['person'] = $EM_Booking->get_person()->get_name();
+                    $order['email'] = $EM_Booking->get_person()->user_email;
+                    $order['phone'] = $EM_Booking->get_person()->phone;
+                    $order['status'] = $EM_Booking->get_status(true);
+                    if (($order['status'] != 'Approved') && ($order['status'] != 'Awaiting Payment')) {
+                        continue;
+                    }
+                    $order['event'] = $EM_Booking->get_event()->event_name;
+                    $order['address'] = $EM_Booking->booking_meta['registration']['dbem_address'];
+                    $order['city'] = $EM_Booking->booking_meta['registration']['dbem_city'];
+                    $order['adults'] = array();
+                    $order['children'] = array();
+                    $order['toddlers'] = array();
+                    $order['rooms'] = array();
+
+                    $event_id = $EM_Booking->get_event()->event_id;
+                    $EM_Form = EM_Booking_Form::get_form($event_id, $EM_Booking);
+                    if ($EM_Event->event_name == 'Limmud 2016 Self-Accomodation') {
+                        $order['room_mate'] = '';
+                        $order['shabbat_area'] = '';
+                        $order['bus_needed'] = '';
+                    } else {
+                        $order['room_mate'] = $EM_Form->get_formatted_value($EM_Form->form_fields['room_mate'], $EM_Booking->booking_meta['booking']['room_mate']);
+                        $order['shabbat_area'] = $EM_Form->get_formatted_value($EM_Form->form_fields['shabbat_area'], $EM_Booking->booking_meta['booking']['shabbat_area']);
+                        $order['bus_needed'] = $EM_Form->get_formatted_value($EM_Form->form_fields['bus_needed'], $EM_Booking->booking_meta['booking']['bus_needed']);
+                    }
+                    $order['comment'] = $EM_Form->get_formatted_value($EM_Form->form_fields['dbem_comment'], $EM_Booking->booking_meta['booking']['dbem_comment']);
+                    $order['children_num'] = 0;
+                    $order['toddlers_num'] = 0;
+                    $order['role'] = $EM_Form->get_formatted_value($EM_Form->form_fields['participant_role'], $EM_Booking->booking_meta['booking']['participant_role']);
+                    // $order['accomodation_type'] = $EM_Form->get_formatted_value($EM_Form->form_fields['accomodation_type'], $EM_Booking->booking_meta['booking']['accomodation_type']);
+
+                    // populate arrays from tickets and attendees data
                     $attendees_data = EM_Attendees_Form::get_booking_attendees($EM_Booking);
                     foreach($EM_Booking->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking) {
-                        $row = array();
-                        $row[] = $EM_Booking->booking_id;
-                        $row[] = $EM_Booking->get_person()->get_name();
-                        $row[] = $EM_Booking->get_person()->user_email;
-                        $row[] = $EM_Booking->get_status(true);
-                        $row[] = $EM_Booking->get_event()->event_name;
-                        $row[] = $EM_Ticket_Booking->get_ticket()->ticket_name;
-                        $row[] = $EM_Ticket_Booking->get_ticket()->get_price(true);
-                        $row[] = $EM_Booking->get_person()->phone;
-                        $row[] = $EM_Booking->booking_meta['registration']['dbem_address'];
-                        $row[] = $EM_Booking->booking_meta['registration']['dbem_city'];
-
-                        $event_id = $EM_Booking->get_event()->event_id;
-                        $EM_Form = EM_Booking_Form::get_form($event_id, $EM_Booking);
-                        $row[] = $EM_Form->get_formatted_value($EM_Form->form_fields['participant_role'], $EM_Booking->booking_meta['booking']['participant_role']);
-                        $row[] = $EM_Form->get_formatted_value($EM_Form->form_fields['accomodation_type'], $EM_Booking->booking_meta['booking']['accomodation_type']);
-                        if ($EM_Event->event_name == 'Limmud 2016 Self-Accomodation') {
-                            $row[] = '';
-                            $row[] = '';
-                            $row[] = '';
-                            $row[] = '';
-                            $row[] = '';
-                        } else {
-                            $row[] = $EM_Form->get_formatted_value($EM_Form->form_fields['room_type'], $EM_Booking->booking_meta['booking']['room_type']);
-                            $row[] = $EM_Form->get_formatted_value($EM_Form->form_fields['room_mate'], $EM_Booking->booking_meta['booking']['room_mate']);
-                            $row[] = $EM_Form->get_formatted_value($EM_Form->form_fields['shabbat_area'], $EM_Booking->booking_meta['booking']['shabbat_area']);
-                            $row[] = $EM_Form->get_formatted_value($EM_Form->form_fields['bus_needed'], $EM_Booking->booking_meta['booking']['bus_needed']);
-                            $row[] = $EM_Form->get_formatted_value($EM_Form->form_fields['discount_student'], $EM_Booking->booking_meta['booking']['discount_student']);
-                        }
-                        $row[] = $EM_Form->get_formatted_value($EM_Form->form_fields['dbem_comment'], $EM_Booking->booking_meta['booking']['dbem_comment']);
-                         
-                        $str = '';
+                        $people = array();
                         if (!empty($attendees_data[$EM_Ticket_Booking->ticket_id])) {
                             foreach($attendees_data[$EM_Ticket_Booking->ticket_id] as $attendee_title => $attendee_data) {
+                                $person = array();
                                 $i = 0;
                                 foreach( $attendee_data as $field_value) {
-                                    if ($i <= 2) {
-                                        $str .= $field_value;
-                                        $str .= ' ';
-                                        $i += 1;
+                                    if ($i == 0) {
+                                        $person['name'] = $field_value; 
                                     }
+                                    if ($i == 1) {
+                                        $person['surname'] = $field_value; 
+                                    }
+                                    if ($i == 2) {
+                                        $person['birthday'] = $field_value; 
+                                    }
+                                    $i++;
                                 }
-                                $str .= ', ';
+                                $people[] = $person;
                             }
                         }
-                        $row[] = $str;
-                        fputcsv($handle, $row, $delimiter);
+
+                        if (($EM_Ticket_Booking->get_ticket()->ticket_name == 'Количество взрослых (старше 18 лет)') ||
+                            ($EM_Ticket_Booking->get_ticket()->ticket_name == 'Количество подростков (старше 12 лет)')) {
+                            $order['adults'] = array_merge($order['adults'], $people);
+                        }
+
+                        if ($EM_Ticket_Booking->get_ticket()->ticket_name == 'Количество детей (до 12 лет)') {
+                            if (strpos($order['comment'], 'CHILD#ADULT') !== false) {
+                                $order['adults'] = array_merge($order['adults'], $people);
+                            } else {
+                                $order['children'] = array_merge($order['children'], $people);
+                                $order['children_num'] += $EM_Ticket_Booking->get_spaces();
+                            }
+                        }
+
+                        if ($EM_Ticket_Booking->get_ticket()->ticket_name == 'Количество младенцев (до 3 лет)') {
+                            $order['toddlers'] = array_merge($order['toddlers'], $people);
+                            $order['toddlers_num'] += $EM_Ticket_Booking->get_spaces();
+                        }
+
+                        if ((strpos($EM_Ticket_Booking->get_ticket()->ticket_name, 'Room') !== false) ||
+                            (strpos($EM_Ticket_Booking->get_ticket()->ticket_name, 'Place') !== false) ||
+                            (strpos($EM_Ticket_Booking->get_ticket()->ticket_name, 'Self') !== false)) {
+                            $room_data = array();
+                            $room_data['name'] = $EM_Ticket_Booking->get_ticket()->ticket_name;
+                            $room_data['people'] = array();
+                            for ($i = 0; $i < $EM_Ticket_Booking->get_spaces(); $i++) {
+                                $order['rooms'][] = $room_data;
+                            }
+                        }
                     }
+
+                    // populate rooms
+                    $adult_id = 0;
+                    $child_id = 0;
+                    foreach($order['rooms'] as $key => $room) {
+                        if ($room['name'] == 'Room - 2 adults + 2 kids') {
+                            $order['rooms'][$key]['people'][] = $order['adults'][$adult_id++];
+                            $order['rooms'][$key]['people'][] = $order['adults'][$adult_id++];
+                            $order['rooms'][$key]['people'][] = $order['children'][$child_id++];
+                            $order['rooms'][$key]['people'][] = $order['children'][$child_id++];
+                        } elseif ($room['name'] == 'Room - 1 adult alone') {
+                            $order['rooms'][$key]['people'][] = $order['adults'][$adult_id++];
+                        } elseif ($room['name'] == 'Room - 2 adults + kid') {
+                            $order['rooms'][$key]['people'][] = $order['adults'][$adult_id++];
+                            $order['rooms'][$key]['people'][] = $order['adults'][$adult_id++];
+                            $order['rooms'][$key]['people'][] = $order['children'][$child_id++];
+                        } elseif ($room['name'] == 'Room - 3 adults') {
+                            $order['rooms'][$key]['people'][] = $order['adults'][$adult_id++];
+                            $order['rooms'][$key]['people'][] = $order['adults'][$adult_id++];
+                            $order['rooms'][$key]['people'][] = $order['adults'][$adult_id++];
+                        } elseif ($room['name'] == 'Room - adult + 3 kids') {
+                            $order['rooms'][$key]['people'][] = $order['adults'][$adult_id++];
+                            $order['rooms'][$key]['people'][] = $order['children'][$child_id++];
+                            $order['rooms'][$key]['people'][] = $order['children'][$child_id++];
+                            $order['rooms'][$key]['people'][] = $order['children'][$child_id++];
+                        } elseif ($room['name'] == 'Room - 2 adults') {
+                            $order['rooms'][$key]['people'][] = $order['adults'][$adult_id++];
+                            $order['rooms'][$key]['people'][] = $order['adults'][$adult_id++];
+                        } elseif ($room['name'] == 'Room - adult + 2 kids') {
+                            $order['rooms'][$key]['people'][] = $order['adults'][$adult_id++];
+                            $order['rooms'][$key]['people'][] = $order['children'][$child_id++];
+                            $order['rooms'][$key]['people'][] = $order['children'][$child_id++];
+                        } elseif ($room['name'] == 'Room - adult + kid') {
+                            $order['rooms'][$key]['people'][] = $order['adults'][$adult_id++];
+                            $order['rooms'][$key]['people'][] = $order['children'][$child_id++];
+                        } elseif ($room['name'] == 'Self accomodation - 3 days - adult') {
+                            $order['rooms'][$key]['people'][] = $order['adults'][$adult_id++];
+                        } elseif ($room['name'] == 'Self accomodation - 1 day - adult') {
+                            $order['rooms'][$key]['people'][] = $order['adults'][$adult_id++];
+                        } elseif ($room['name'] == 'Self accomodation - 3 days - kid') {
+                            $order['rooms'][$key]['people'][] = $order['children'][$child_id++];
+                        } elseif ($room['name'] == 'Self accomodation - 1 day - kid') {
+                            $order['rooms'][$key]['people'][] = $order['children'][$child_id++];
+                        } elseif ($room['name'] == 'Place in double room') {
+                            $order['rooms'][$key]['people'][] = $order['adults'][$adult_id++];
+                        } elseif ($room['name'] == 'Place in triple room') {
+                            $order['rooms'][$key]['people'][] = $order['adults'][$adult_id++];
+                        }
+                    }
+
+                    $toddler_names = '';
+                    $i = 0;
+                    foreach($order['toddlers'] as $toddler) {
+                        if ($i++ > 0) {
+                            $toddler_names .= ', ';
+                        }
+                        $toddler_names .= $toddler['name'];
+                        $toddler_names .= ' ';
+                        $toddler_names .= $toddler['surname'];
+                        $toddler_names .= ' ';
+                        $toddler_names .= $toddler['birthday'];
+                    }
+
+                    if ((count($order['rooms']) >= 2)  && (strpos($order['comment'], 'TODDLER#12') !== false)) {
+                      $order['rooms'][0]['toddler_names'] = $order['toddlers'][0]['name'] . ' ' . $order['toddlers'][0]['surname'] . ' ' . $order['toddlers'][0]['birthday'];
+                      $order['rooms'][0]['toddlers_num'] = 1;
+                      $order['rooms'][1]['toddler_names'] = $order['toddlers'][1]['name'] . ' ' . $order['toddlers'][1]['surname'] . ' ' . $order['toddlers'][1]['birthday'];
+                      $order['rooms'][1]['toddlers_num'] = 1;
+                    } elseif ((count($order['rooms']) >= 3) && (strpos($order['comment'], 'TODDLER#3') !== false)) {
+                        $order['rooms'][2]['toddler_names'] = $toddler_names;
+                        $order['rooms'][2]['toddlers_num'] = $order['toddlers_num'];
+                    } elseif ((count($order['rooms']) >= 2) && (strpos($order['comment'], 'TODDLER#2') !== false)) {
+                        $order['rooms'][1]['toddler_names'] = $toddler_names;
+                        $order['rooms'][1]['toddlers_num'] = $order['toddlers_num'];
+                    } elseif (count($order['rooms']) >= 1) {
+                      $order['rooms'][0]['toddler_names'] = $toddler_names;
+                      $order['rooms'][0]['toddlers_num'] = $order['toddlers_num'];
+                    }
+
+                    // people with children and religious - Resort; otherwise - Club
+                    foreach($order['rooms'] as $key => $room) {
+                        $hotel = 'Club';
+                        if ((strpos($order['shabbat_area'], 'да') !== false) ||
+                            (strpos($room['name'], 'kid') !== false) ||
+                            ($room['toddler_names'] != '') ||
+                            (strpos($order['comment'], '#RESORT') !== false)) {
+                            $hotel = 'Resort';
+                        }
+                        if (strpos($room['name'], 'Self') !== false) {
+                            $hotel = '';
+                        }
+                        if (strpos($order['comment'], '#CLUB') !== false) {
+                            $hotel = 'Club';
+                        }
+                        $order['rooms'][$key]['hotel'] = $hotel;
+                    }
+
+                    $orders[$order['id']] = $order;
                 }
             }
+
+            ksort($orders);
+
+            $room_count = 1;
+            foreach($orders as $order) {
+               foreach($order['rooms'] as $room) {
+                   $room_id = '';
+                   if (strpos($room['name'], 'Room') !== false) {
+                       $room_id = (string)$room_count++;
+                   }
+                   $i = 0;
+                   foreach($room['people'] as $person) {
+                       $row = array();
+                       $row[] = $room_id;
+                       $row[] = $room['name'];
+                       // $row[] = $order['event'];
+                       // $row[] = $order['email'];
+                       // $row[] = $order['phone'];
+                       $row[] = $order['id'];
+                       $row[] = $person['name'];
+                       $row[] = $person['surname'];
+                       $row[] = $person['birthday'];
+                       if ($i++ == 0) {
+                           $row[] = $room['toddler_names'];
+                       } else {
+                           $row[] = '';
+                       }
+                       $row[] = $room['hotel'];
+                       $row[] = $order['shabbat_area'];
+                       $row[] = $order['role'];
+                       $row[] = $order['status'];
+                       $row[] = $order['room_mate'];
+                       $row[] = $order['comment'];
+                       fputcsv($handle, $row, $delimiter);
+                   }
+               }
+            }
+
             fclose($handle);
             exit();
         }
