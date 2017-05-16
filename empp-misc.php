@@ -55,13 +55,18 @@ class EM_Paypal_Misc {
 
     public static function em_booking_get_person($EM_Person, $EM_Booking) {
         if (($EM_Person->display_name == 'Guest User') && isset($EM_Booking->booking_meta['attendees'])) {
+            // calculate person name from attendee details of the most expensive ticket
+            $price = -1;
             foreach ($EM_Booking->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking ) {
                 if (isset($EM_Booking->booking_meta['attendees'][$EM_Ticket_Booking->ticket_id][0]) &&
                     isset($EM_Booking->booking_meta['attendees'][$EM_Ticket_Booking->ticket_id][0]['attendee_first_name'])) {
-                    $EM_Person->first_name = $EM_Booking->booking_meta['attendees'][$EM_Ticket_Booking->ticket_id][0]['attendee_first_name'];
-                    $EM_Person->last_name = $EM_Booking->booking_meta['attendees'][$EM_Ticket_Booking->ticket_id][0]['attendee_last_name'];
-                    $EM_Person->display_name = $EM_Person->first_name . " " . $EM_Person->last_name;
-                    break;
+                    if ($EM_Ticket_Booking->get_ticket()->ticket_price > $price)
+                    {
+                        $price = $EM_Ticket_Booking->get_ticket()->ticket_price;
+                        $EM_Person->first_name = $EM_Booking->booking_meta['attendees'][$EM_Ticket_Booking->ticket_id][0]['attendee_first_name'];
+                        $EM_Person->last_name = $EM_Booking->booking_meta['attendees'][$EM_Ticket_Booking->ticket_id][0]['attendee_last_name'];
+                        $EM_Person->display_name = $EM_Person->first_name . " " . $EM_Person->last_name;
+                    }
                 }
             }
         }
