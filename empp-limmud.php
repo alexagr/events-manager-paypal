@@ -36,10 +36,10 @@ class EM_Paypal_Limmud {
                     TICKET_ADULT = 4;
                     TICKET_KID = 2;
                     TICKET_TODDLER = 3;
-                } else if (document.getElementsByName("em_tickets[186][spaces]")[0]) {
-                    TICKET_ADULT = 186;
-                    TICKET_KID = 188;
-                    TICKET_TODDLER = 189;
+                } else if (document.getElementsByName("em_tickets[39][spaces]")[0]) {
+                    TICKET_ADULT = 39;
+                    TICKET_KID = 40;
+                    TICKET_TODDLER = 41;
                     self_accomodation = true;
                 }
 
@@ -231,6 +231,28 @@ class EM_Paypal_Limmud {
                     document.getElementsByName("em_tickets[21][spaces]")[0].value = student_discount;
                     document.getElementsByName("em_tickets[22][spaces]")[0].value = volunteer_3_discount;
                     document.getElementsByName("em_tickets[23][spaces]")[0].value = volunteer_2_discount;
+                } else if (document.getElementsByName("em_tickets[39][spaces]")[0]) {
+                    document.getElementsByName("em_tickets[24][spaces]")[0].value = room_2_adult_2_kid;
+                    document.getElementsByName("em_tickets[25][spaces]")[0].value = room_1_adult; 
+                    document.getElementsByName("em_tickets[26][spaces]")[0].value = room_2_adult_1_kid; 
+                    document.getElementsByName("em_tickets[27][spaces]")[0].value = room_3_adult; 
+                    document.getElementsByName("em_tickets[28][spaces]")[0].value = room_1_adult_3_kid;
+                    document.getElementsByName("em_tickets[29][spaces]")[0].value = room_2_adult; 
+                    document.getElementsByName("em_tickets[30][spaces]")[0].value = room_1_adult_2_kid;  
+                    document.getElementsByName("em_tickets[31][spaces]")[0].value = room_1_adult_1_kid;  
+                    document.getElementsByName("em_tickets[32][spaces]")[0].value = place_in_double_room;
+                    document.getElementsByName("em_tickets[33][spaces]")[0].value = place_in_triple_room;
+    
+                    document.getElementsByName("em_tickets[34][spaces]")[0].value = ticket_3_day_adult;
+                    document.getElementsByName("em_tickets[35][spaces]")[0].value = ticket_1_day_adult;
+                    document.getElementsByName("em_tickets[36][spaces]")[0].value = ticket_3_day_kid;
+                    document.getElementsByName("em_tickets[37][spaces]")[0].value = ticket_1_day_kid;
+    
+                    document.getElementsByName("em_tickets[38][spaces]")[0].value = transportation;
+                    
+                    document.getElementsByName("em_tickets[43][spaces]")[0].value = student_discount;
+                    document.getElementsByName("em_tickets[44][spaces]")[0].value = volunteer_3_discount;
+                    document.getElementsByName("em_tickets[45][spaces]")[0].value = volunteer_2_discount;
                 } else if (document.getElementsByName("em_tickets[186][spaces]")[0]) {
                     document.getElementsByName("em_tickets[191][spaces]")[0].value = ticket_3_day_adult;
                     document.getElementsByName("em_tickets[192][spaces]")[0].value = ticket_1_day_adult;
@@ -334,8 +356,8 @@ class EM_Paypal_Limmud {
             var roomType = document.getElementsByName("room_type")[0];            
             
             if (adults == null) {
-                adults = document.getElementsByName("em_tickets[139][spaces]")[0]; 
-                kids = document.getElementsByName("em_tickets[141][spaces]")[0];
+                adults = document.getElementsByName("em_tickets[39][spaces]")[0]; 
+                kids = document.getElementsByName("em_tickets[40][spaces]")[0];
             }
             if (adults == null) {
                 return;
@@ -349,7 +371,7 @@ class EM_Paypal_Limmud {
                 document.getElementsByClassName("input-field-shabbat_area")[0].style.display = "none";
                 document.getElementsByClassName("input-field-bus_needed")[0].style.display = "none";
 
-                updateRoomType(['без проживания']);                
+                updateRoomType([ROOM_NONE]);                
                 document.getElementsByClassName("input-field-room_type")[0].style.display = "none";
             } else {
                 document.getElementsByClassName("input-field-room_type")[0].style.display = "block";
@@ -360,17 +382,21 @@ class EM_Paypal_Limmud {
                 document.getElementsByName("room_label")[0].style.display = "none";
                 if (kids.selectedIndex > 0) {
                     updateRoomType([ROOM_FAMILY]);                
-                    document.getElementsByClassName("input-field-room_type")[0].style.display = "none";
                 } else if (adults.selectedIndex == 1) {
                     updateRoomType([ROOM_PLACE_IN_DOUBLE, ROOM_PLACE_IN_TRIPLE, ROOM_SINGLE]);                
                     document.getElementsByName("room_label")[0].style.display = "block";
                 } else if (adults.selectedIndex == 2) {
-                    updateRoomType([ROOM_PLACE_IN_DOUBLE, ROOM_PLACE_IN_TRIPLE]);                
+                    updateRoomType([ROOM_PLACE_IN_TRIPLE, ROOM_DOUBLE]);                
                 } else if (adults.selectedIndex == 3) {
-                    updateRoomType([ROOM_PLACE_IN_TRIPLE]);                
+                    updateRoomType([ROOM_TRIPLE]);                
+                } else if (adults.selectedIndex == 4) {
+                    updateRoomType([ROOM_PLACE_IN_TRIPLE, ROOM_DOUBLE]);                
+                } else if (adults.selectedIndex == 5) {
+                    updateRoomType([ROOM_PLACE_IN_DOUBLE, ROOM_PLACE_IN_TRIPLE]);                
+                } else if (adults.selectedIndex == 6) {
+                    updateRoomType([ROOM_DOUBLE, ROOM_TRIPLE]);                
                 } else {
                     updateRoomType([ROOM_FAMILY]);                
-                    document.getElementsByClassName("input-field-room_type")[0].style.display = "none";
                 }
 
                 if (roomType.value == ROOM_PLACE_IN_TRIPLE) {
@@ -381,7 +407,7 @@ class EM_Paypal_Limmud {
                     document.getElementsByName("bed_type")[0].value = BED_TWIN;            
                 } 
                  
-                if ((roomType.value == ROOM_PLACE_IN_DOUBLE) || (roomType.value == ROOM_PLACE_IN_DOUBLE)) {
+                if ((roomType.value == ROOM_PLACE_IN_DOUBLE) || (roomType.value == ROOM_PLACE_IN_TRIPLE)) {
                     document.getElementsByName("room_label")[0].style.display = "block";
                 } else {
                     document.getElementsByName("room_label")[0].style.display = "none";
