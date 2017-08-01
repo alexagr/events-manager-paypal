@@ -33,13 +33,20 @@ class EM_Paypal_Limmud {
                 var TICKET_TODDLER = 0;
                 
                 if (document.getElementsByName("em_tickets[4][spaces]")[0]) {
+                    // regular registration
                     TICKET_ADULT = 4;
                     TICKET_KID = 2;
                     TICKET_TODDLER = 3;
                 } else if (document.getElementsByName("em_tickets[39][spaces]")[0]) {
+                    // registration for volunteers and presenters
                     TICKET_ADULT = 39;
                     TICKET_KID = 40;
                     TICKET_TODDLER = 41;
+                } else if (document.getElementsByName("em_tickets[139][spaces]")[0]) {
+                    // registration for self-accomodation
+                    TICKET_ADULT = 139;
+                    TICKET_KID = 140;
+                    TICKET_TODDLER = 141;
                     self_accomodation = true;
                 }
 
@@ -83,6 +90,7 @@ class EM_Paypal_Limmud {
                 var volunteer_2_discount = 0;
                 var volunteer_3_discount = 0;
                 var student_discount = 0;
+                var transportation_discount = 0;
 
                 if (self_accomodation) {
                     if (accomodation_element.selectedIndex == 0) {
@@ -197,6 +205,7 @@ class EM_Paypal_Limmud {
                 if (!self_accomodation) {
                     if (transportation_element.selectedIndex != 0) {
                         transportation = adults + kids;
+                        transportation_discount = volunteer_num; 
                     }
     
                     if (volunteer_num > 0) {
@@ -228,6 +237,7 @@ class EM_Paypal_Limmud {
     
                     document.getElementsByName("em_tickets[19][spaces]")[0].value = transportation;
                     
+                    document.getElementsByName("em_tickets[20][spaces]")[0].value = transportation_discount;
                     document.getElementsByName("em_tickets[21][spaces]")[0].value = student_discount;
                     document.getElementsByName("em_tickets[22][spaces]")[0].value = volunteer_3_discount;
                     document.getElementsByName("em_tickets[23][spaces]")[0].value = volunteer_2_discount;
@@ -250,6 +260,7 @@ class EM_Paypal_Limmud {
     
                     document.getElementsByName("em_tickets[38][spaces]")[0].value = transportation;
                     
+                    document.getElementsByName("em_tickets[42][spaces]")[0].value = transportation_discount;
                     document.getElementsByName("em_tickets[43][spaces]")[0].value = student_discount;
                     document.getElementsByName("em_tickets[44][spaces]")[0].value = volunteer_3_discount;
                     document.getElementsByName("em_tickets[45][spaces]")[0].value = volunteer_2_discount;

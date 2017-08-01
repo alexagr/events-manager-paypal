@@ -54,13 +54,13 @@ class EM_Paypal_Misc {
     }
 
     public static function em_booking_get_person($EM_Person, $EM_Booking) {
-        if (($EM_Person->display_name == 'Guest User') && isset($EM_Booking->booking_meta['attendees'])) {
-            // calculate person name from attendee details of the most expensive ticket
+        if ((($EM_Person->display_name == 'Guest User') || ($EM_Person->display_name == 'Гость')) && isset($EM_Booking->booking_meta['attendees'])) {
+            // calculate person name from attendee details of the most expensive 'person' ticket
             $price = -1;
             foreach ($EM_Booking->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking ) {
                 if (isset($EM_Booking->booking_meta['attendees'][$EM_Ticket_Booking->ticket_id][0]) &&
                     isset($EM_Booking->booking_meta['attendees'][$EM_Ticket_Booking->ticket_id][0]['attendee_first_name'])) {
-                    if ($EM_Ticket_Booking->get_ticket()->ticket_price > $price)
+                    if (($EM_Ticket_Booking->get_ticket()->ticket_price > $price) && ($EM_Ticket_Booking->get_ticket()->ticket_price < 1))
                     {
                         $price = $EM_Ticket_Booking->get_ticket()->ticket_price;
                         $EM_Person->first_name = $EM_Booking->booking_meta['attendees'][$EM_Ticket_Booking->ticket_id][0]['attendee_first_name'];
@@ -138,6 +138,9 @@ class EM_Paypal_Misc {
         $events = EM_Events::get(array('scope'=>'future'));
         foreach ($events as $EM_Event) {
             if ($EM_Event->event_name == 'Limmud 2016 Private Registration') {
+                continue;
+            }
+            if ($EM_Event->event_id == 2) {
                 continue;
             }
             foreach ($EM_Event->get_bookings()->bookings as $EM_Booking) {

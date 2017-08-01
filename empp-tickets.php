@@ -33,7 +33,7 @@ class EM_Paypal_Tickets {
                             <tr class="em-tickets-row">
                                 <td class="ticket-status"><span class="<?php if($EM_Ticket->ticket_id && $EM_Ticket->is_available()){ echo 'ticket_on'; }elseif($EM_Ticket->ticket_id > 0){ echo 'ticket_off'; }else{ echo 'ticket_new'; } ?>"></span></td>                                                 
                                 <td class="ticket-name">
-                                    <span class="ticket_name"><?php if($EM_Ticket->ticket_members) echo '* ';?><?php echo wp_kses_data($EM_Ticket->ticket_name); ?></span>
+                                    <span class="ticket_name"><?php if($EM_Ticket->ticket_members) echo '* ';?><?php echo wp_kses_data(apply_filters('translate_text', $EM_Ticket->ticket_name, 'ru')); ?></span>
                                 </td>
                                 <td class="ticket-price">
                                     <span class="ticket_price"><?php echo ($EM_Ticket->ticket_price) ? esc_html($EM_Ticket->get_price_precise()) : esc_html__('Free','events-manager'); ?></span>
