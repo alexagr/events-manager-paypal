@@ -39,7 +39,7 @@ class EM_Paypal_CSV {
             $delimiter = !defined('EM_CSV_DELIMITER') ? ',' : EM_CSV_DELIMITER;
             $delimiter = apply_filters('em_csv_delimiter', $delimiter);
 
-            $headers = array('id', 'name', 'email', 'status', 'event_id', 'ticket_name', 'ticket_price', 'phone', 'address', 'city', 'accomodation_type', 'room_type', 'bed_type', 'shabbat_area', 'bus_needed', 'comment', 'first_name', 'last_name', 'birthday', 'israeli', 'passport', 'role');
+            $headers = array('id', 'name', 'email', 'status', 'event_id', 'ticket_name', 'ticket_price', 'phone', 'address', 'city', 'accomodation_type', 'room_type', 'bed_type', 'shabbat_room', 'bus_needed', 'child_program', 'special_needs', 'comment', 'first_name', 'last_name', 'birthday', 'israeli', 'passport', 'role');
             fputcsv($handle, $headers, $delimiter);
 
 
@@ -72,12 +72,15 @@ class EM_Paypal_CSV {
                             $row[] = '';
                             $row[] = '';
                             $row[] = '';
+                            $row[] = '';
                         } else {
                             $row[] = apply_filters('translate_text', $EM_Form->get_formatted_value($EM_Form->form_fields['room_type'], $EM_Booking->booking_meta['booking']['room_type']), 'ru');
                             $row[] = apply_filters('translate_text', $EM_Form->get_formatted_value($EM_Form->form_fields['bed_type'], $EM_Booking->booking_meta['booking']['bed_type']), 'ru');
-                            $row[] = apply_filters('translate_text', $EM_Form->get_formatted_value($EM_Form->form_fields['shabbat_area'], $EM_Booking->booking_meta['booking']['shabbat_area']), 'ru');
+                            $row[] = apply_filters('translate_text', $EM_Form->get_formatted_value($EM_Form->form_fields['shabbat_room'], $EM_Booking->booking_meta['booking']['shabbat_room']), 'ru');
                             $row[] = apply_filters('translate_text', $EM_Form->get_formatted_value($EM_Form->form_fields['bus_needed'], $EM_Booking->booking_meta['booking']['bus_needed']), 'ru');
+                            $row[] = apply_filters('translate_text', $EM_Form->get_formatted_value($EM_Form->form_fields['child_program'], $EM_Booking->booking_meta['booking']['child_program']), 'ru');
                         }
+                        $row[] = $EM_Form->get_formatted_value($EM_Form->form_fields['special_needs'], $EM_Booking->booking_meta['booking']['special_needs']);
                         $row[] = $EM_Form->get_formatted_value($EM_Form->form_fields['dbem_comment'], $EM_Booking->booking_meta['booking']['dbem_comment']);
 
                         if (!empty($attendees_data[$EM_Ticket_Booking->ticket_id])) {
@@ -111,7 +114,7 @@ class EM_Paypal_CSV {
             $delimiter = !defined('EM_CSV_DELIMITER') ? ',' : EM_CSV_DELIMITER;
             $delimiter = apply_filters('em_csv_delimiter', $delimiter);
 
-            $headers = array('hotel', 'room_id', 'room_type', 'bed_type', 'order#', 'name', 'surname', 'birthday', 'role', 'shabbat_area', 'comment', 'status');
+            $headers = array('hotel', 'room_id', 'room_type', 'bed_type', 'order#', 'name', 'surname', 'birthday', 'role', 'shabbat_room', 'child_program', 'special_needs', 'comment', 'status', 'secret');
             fputcsv($handle, $headers, $delimiter);
 
             $orders = array();
@@ -130,6 +133,7 @@ class EM_Paypal_CSV {
                     $order['email'] = $EM_Booking->get_person()->user_email;
                     $order['phone'] = $EM_Booking->get_person()->phone;
                     $order['status'] = $EM_Booking->get_status(true);
+                    $order['secret'] = $EM_Booking->booking_meta['booking']['secret_code'];
                     if (($order['status'] != 'Approved') && ($order['status'] != 'Awaiting Payment')) {
                         continue;
                     }
@@ -145,13 +149,16 @@ class EM_Paypal_CSV {
                     if ($EM_Event->event_id == 3) {
                         // self accomodation
                         $order['bed_type'] = '';
-                        $order['shabbat_area'] = '';
+                        $order['shabbat_room'] = '';
                         $order['bus_needed'] = '';
+                        $order['child_program'] = '';
                     } else {
                         $order['bed_type'] = apply_filters('translate_text', $EM_Form->get_formatted_value($EM_Form->form_fields['bed_type'], $EM_Booking->booking_meta['booking']['bed_type']), 'ru');
-                        $order['shabbat_area'] = apply_filters('translate_text', $EM_Form->get_formatted_value($EM_Form->form_fields['shabbat_area'], $EM_Booking->booking_meta['booking']['shabbat_area']), 'ru');
+                        $order['shabbat_room'] = apply_filters('translate_text', $EM_Form->get_formatted_value($EM_Form->form_fields['shabbat_room'], $EM_Booking->booking_meta['booking']['shabbat_room']), 'ru');
                         $order['bus_needed'] = apply_filters('translate_text', $EM_Form->get_formatted_value($EM_Form->form_fields['bus_needed'], $EM_Booking->booking_meta['booking']['bus_needed']), 'ru');
+                        $order['child_program'] = apply_filters('translate_text', $EM_Form->get_formatted_value($EM_Form->form_fields['child_program'], $EM_Booking->booking_meta['booking']['child_program']), 'ru');
                     }
+                    $order['special_needs'] = $EM_Form->get_formatted_value($EM_Form->form_fields['special_needs'], $EM_Booking->booking_meta['booking']['special_needs']);
                     $order['comment'] = $EM_Form->get_formatted_value($EM_Form->form_fields['dbem_comment'], $EM_Booking->booking_meta['booking']['dbem_comment']);
                     $order['children_num'] = 0;
                     $order['toddlers_num'] = 0;
@@ -304,11 +311,10 @@ class EM_Paypal_CSV {
                         }
                     }
 
-                    // people with children and religious - Resort; otherwise - Club
+                    // people with children - Resort; otherwise - unknown
                     foreach($order['rooms'] as $key => $room) {
-                        $hotel = 'Club';
-                        if ((strpos($order['shabbat_area'], 'да') !== false) ||
-                            (strpos($room['name'], 'kid') !== false) ||
+                        $hotel = '';
+                        if ((strpos($room['name'], 'kid') !== false) ||
                             (count($order['toddlers']) > 0) ||
                             (strpos($order['comment'], '#RESORT') !== false)) {
                             $hotel = 'Resort';
@@ -328,17 +334,23 @@ class EM_Paypal_CSV {
 
             ksort($orders);
 
+            $room_count = 1;
+            /*
             $club_room_count = 1;
             $resort_room_count = 1;
+            */
             foreach($orders as $order) {
                foreach($order['rooms'] as $room) {
                    $room_id = '';
                    if (strpos($room['name'], 'Room') !== false) {
+                       $room_id = (string)$room_count++;
+                       /*
                        if ($room['hotel'] == 'Club') {
                            $room_id = (string)$club_room_count++;
                        } else {
                            $room_id = (string)$resort_room_count++;
                        }
+                       */
                    }
                    $i = 0;
                    foreach($room['people'] as $person) {
@@ -355,9 +367,12 @@ class EM_Paypal_CSV {
                        $row[] = $person['surname'];
                        $row[] = $person['birthday'];
                        $row[] = $person['role'];
-                       $row[] = $order['shabbat_area'];
+                       $row[] = $order['shabbat_room'];
+                       $row[] = $order['child_program'];
+                       $row[] = $order['special_needs'];
                        $row[] = $order['comment'];
                        $row[] = $order['status'];
+                       $row[] = $order['secret'];
                        fputcsv($handle, $row, $delimiter);
                    }
                }
@@ -378,14 +393,15 @@ class EM_Paypal_CSV {
             $delimiter = !defined('EM_CSV_DELIMITER') ? ',' : EM_CSV_DELIMITER;
             $delimiter = apply_filters('em_csv_delimiter', $delimiter);
 
-            $headers = array('ticket_id', 'ticket_type', 'order#', 'email', 'phone', 'destination', 'name', 'surname', 'birthday', 'toddlers', 'role', 'status', 'comment');
+            $headers = array('ticket_id', 'ticket_type', 'order#', 'email', 'phone', 'destination', 'name', 'surname', 'birthday', 'toddlers', 'role', 'status', 'special_needs', 'comment');
             fputcsv($handle, $headers, $delimiter);
 
             $orders = array();
 
             $events = EM_Events::get(array('scope'=>'future'));
             foreach ($events as $EM_Event) {
-                if (($EM_Event->event_name != 'Limmud 2016 Registration') && ($EM_Event->event_name != 'Limmud 2016 Private Registration') && ($EM_Event->event_name != 'Limmud 2016 Self-Accomodation')) {
+                // if (($EM_Event->event_name != 'Limmud 2016 Registration') && ($EM_Event->event_name != 'Limmud 2016 Private Registration') && ($EM_Event->event_name != 'Limmud 2016 Self-Accomodation')) {
+                if (($EM_Event->event_id != 1) && ($EM_Event->event_id != 2) && ($EM_Event->event_id != 3)) {
                     continue;
                 }
                 foreach ($EM_Event->get_bookings()->bookings as $EM_Booking) {
@@ -411,13 +427,12 @@ class EM_Paypal_CSV {
                     $EM_Form = EM_Booking_Form::get_form($event_id, $EM_Booking);
                     if ($EM_Event->event_name == 'Limmud 2016 Self-Accomodation') {
                         $order['room_mate'] = '';
-                        $order['shabbat_area'] = '';
                         $order['bus_needed'] = '';
                     } else {
                         $order['room_mate'] = $EM_Form->get_formatted_value($EM_Form->form_fields['room_mate'], $EM_Booking->booking_meta['booking']['room_mate']);
-                        $order['shabbat_area'] = $EM_Form->get_formatted_value($EM_Form->form_fields['shabbat_area'], $EM_Booking->booking_meta['booking']['shabbat_area']);
                         $order['bus_needed'] = $EM_Form->get_formatted_value($EM_Form->form_fields['bus_needed'], $EM_Booking->booking_meta['booking']['bus_needed']);
                     }
+                    $order['special_needs'] = $EM_Form->get_formatted_value($EM_Form->form_fields['special_needs'], $EM_Booking->booking_meta['booking']['special_needs']);
                     $order['comment'] = $EM_Form->get_formatted_value($EM_Form->form_fields['dbem_comment'], $EM_Booking->booking_meta['booking']['dbem_comment']);
                     $order['role'] = $EM_Form->get_formatted_value($EM_Form->form_fields['participant_role'], $EM_Booking->booking_meta['booking']['participant_role']);
                     // $order['accomodation_type'] = $EM_Form->get_formatted_value($EM_Form->form_fields['accomodation_type'], $EM_Booking->booking_meta['booking']['accomodation_type']);
@@ -446,13 +461,12 @@ class EM_Paypal_CSV {
                             }
                         }
 
-                        if (($EM_Ticket_Booking->get_ticket()->ticket_name == 'Количество взрослых (старше 18 лет)') ||
-                            ($EM_Ticket_Booking->get_ticket()->ticket_name == 'Количество подростков (старше 12 лет)') ||
-                            ($EM_Ticket_Booking->get_ticket()->ticket_name == 'Количество детей (до 12 лет)')) {
+                        if (($EM_Ticket_Booking->get_ticket()->ticket_name == 'Взрослые и подростки (старше 12 лет)') ||
+                            ($EM_Ticket_Booking->get_ticket()->ticket_name == 'Дети (от 3 до 12 лет)')) {
                             $order['people'] = array_merge($order['people'], $people);
                         }
 
-                        if ($EM_Ticket_Booking->get_ticket()->ticket_name == 'Количество младенцев (до 3 лет)') {
+                        if ($EM_Ticket_Booking->get_ticket()->ticket_name == 'Младенцы (до 3 лет)') {
                             $order['toddlers'] = array_merge($order['toddlers'], $people);
                         }
 
@@ -536,6 +550,7 @@ class EM_Paypal_CSV {
                        }
                        $row[] = $order['role'];
                        $row[] = $order['status'];
+                       $row[] = $order['special_needs'];
                        $row[] = $order['comment'];
                        fputcsv($handle, $row, $delimiter);
                    }

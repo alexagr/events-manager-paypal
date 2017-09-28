@@ -32,21 +32,21 @@ class EM_Paypal_Limmud {
                 var TICKET_KID = 0;
                 var TICKET_TODDLER = 0;
                 
-                if (document.getElementsByName("em_tickets[4][spaces]")[0]) {
+                if (document.getElementsByName("em_tickets[4][spaces]").length > 0) {
                     // regular registration
                     TICKET_ADULT = 4;
                     TICKET_KID = 2;
                     TICKET_TODDLER = 3;
-                } else if (document.getElementsByName("em_tickets[39][spaces]")[0]) {
+                } else if (document.getElementsByName("em_tickets[39][spaces]").length > 0) {
                     // registration for volunteers and presenters
                     TICKET_ADULT = 39;
                     TICKET_KID = 40;
                     TICKET_TODDLER = 41;
-                } else if (document.getElementsByName("em_tickets[139][spaces]")[0]) {
+                } else if (document.getElementsByName("em_tickets[91][spaces]").length > 0) {
                     // registration for self-accomodation
-                    TICKET_ADULT = 139;
-                    TICKET_KID = 140;
-                    TICKET_TODDLER = 141;
+                    TICKET_ADULT = 91;
+                    TICKET_KID = 92;
+                    TICKET_TODDLER = 93;
                     self_accomodation = true;
                 }
 
@@ -89,6 +89,8 @@ class EM_Paypal_Limmud {
                 var transportation = 0;
                 var volunteer_2_discount = 0;
                 var volunteer_3_discount = 0;
+                var volunteer_self1_discount = 0;
+                var volunteer_self3_discount = 0;
                 var student_discount = 0;
                 var transportation_discount = 0;
 
@@ -202,7 +204,15 @@ class EM_Paypal_Limmud {
                     }
                 }
                 
-                if (!self_accomodation) {
+                if (self_accomodation || accomodation_element.selectedIndex > 0) {
+                    if (volunteer_num > 0) {
+                        if (ticket_3_day_adult > 0) {
+                            volunteer_self3_discount = volunteer_num;
+                        } else {
+                            volunteer_self1_discount = volunteer_num;
+                        }
+                    }
+                } else {
                     if (transportation_element.selectedIndex != 0) {
                         transportation = adults + kids;
                         transportation_discount = volunteer_num; 
@@ -218,7 +228,7 @@ class EM_Paypal_Limmud {
                 }
                 
                 // update form
-                if (document.getElementsByName("em_tickets[4][spaces]")[0]) {
+                if (document.getElementsByName("em_tickets[4][spaces]").length > 0) {
                     document.getElementsByName("em_tickets[5][spaces]")[0].value = room_2_adult_2_kid;
                     document.getElementsByName("em_tickets[6][spaces]")[0].value = room_1_adult; 
                     document.getElementsByName("em_tickets[7][spaces]")[0].value = room_2_adult_1_kid; 
@@ -241,7 +251,9 @@ class EM_Paypal_Limmud {
                     document.getElementsByName("em_tickets[21][spaces]")[0].value = student_discount;
                     document.getElementsByName("em_tickets[22][spaces]")[0].value = volunteer_3_discount;
                     document.getElementsByName("em_tickets[23][spaces]")[0].value = volunteer_2_discount;
-                } else if (document.getElementsByName("em_tickets[39][spaces]")[0]) {
+                    document.getElementsByName("em_tickets[100][spaces]")[0].value = volunteer_self3_discount;
+                    document.getElementsByName("em_tickets[101][spaces]")[0].value = volunteer_self1_discount;
+                } else if (document.getElementsByName("em_tickets[39][spaces]").length > 0) {
                     document.getElementsByName("em_tickets[24][spaces]")[0].value = room_2_adult_2_kid;
                     document.getElementsByName("em_tickets[25][spaces]")[0].value = room_1_adult; 
                     document.getElementsByName("em_tickets[26][spaces]")[0].value = room_2_adult_1_kid; 
@@ -264,11 +276,15 @@ class EM_Paypal_Limmud {
                     document.getElementsByName("em_tickets[43][spaces]")[0].value = student_discount;
                     document.getElementsByName("em_tickets[44][spaces]")[0].value = volunteer_3_discount;
                     document.getElementsByName("em_tickets[45][spaces]")[0].value = volunteer_2_discount;
-                } else if (document.getElementsByName("em_tickets[186][spaces]")[0]) {
-                    document.getElementsByName("em_tickets[191][spaces]")[0].value = ticket_3_day_adult;
-                    document.getElementsByName("em_tickets[192][spaces]")[0].value = ticket_1_day_adult;
-                    document.getElementsByName("em_tickets[193][spaces]")[0].value = ticket_3_day_kid;
-                    document.getElementsByName("em_tickets[194][spaces]")[0].value = ticket_1_day_kid;
+                    document.getElementsByName("em_tickets[102][spaces]")[0].value = volunteer_self3_discount;
+                    document.getElementsByName("em_tickets[103][spaces]")[0].value = volunteer_self1_discount;
+                } else if (document.getElementsByName("em_tickets[91][spaces]").length > 0) {
+                    document.getElementsByName("em_tickets[94][spaces]")[0].value = ticket_3_day_adult;
+                    document.getElementsByName("em_tickets[95][spaces]")[0].value = ticket_1_day_adult;
+                    document.getElementsByName("em_tickets[96][spaces]")[0].value = ticket_3_day_kid;
+                    document.getElementsByName("em_tickets[97][spaces]")[0].value = ticket_1_day_kid;
+                    document.getElementsByName("em_tickets[98][spaces]")[0].value = volunteer_self3_discount;
+                    document.getElementsByName("em_tickets[99][spaces]")[0].value = volunteer_self1_discount;
                 }
                 
                 var delim = "\n--------------------\n"; 
@@ -321,28 +337,47 @@ class EM_Paypal_Limmud {
                 return;
             }
             FIRST_RUN = false;
-            var roomType = document.getElementsByName("room_type")[0];            
-            ROOM_PLACE_IN_DOUBLE = roomType.options[0].text;
-            ROOM_PLACE_IN_TRIPLE = roomType.options[1].text;
-            ROOM_DOUBLE = roomType.options[2].text;
-            ROOM_TRIPLE = roomType.options[3].text;
-            ROOM_SINGLE = roomType.options[4].text;
-            ROOM_FAMILY = roomType.options[5].text;
-            ROOM_NONE = roomType.options[6].text;
+            var roomType = document.getElementsByName("room_type");
+            if (roomType.length > 0) {
+                ROOM_PLACE_IN_DOUBLE = roomType[0].options[0].text;
+                ROOM_PLACE_IN_TRIPLE = roomType[0].options[1].text;
+                ROOM_DOUBLE = roomType[0].options[2].text;
+                ROOM_TRIPLE = roomType[0].options[3].text;
+                ROOM_SINGLE = roomType[0].options[4].text;
+                ROOM_FAMILY = roomType[0].options[5].text;
+                ROOM_NONE = roomType[0].options[6].text;
+            }
 
-            var bedType = document.getElementsByName("bed_type")[0];
-            BED_TWIN = bedType.options[0].text;             
-            BED_DOUBLE = bedType.options[1].text;             
+            var bedType = document.getElementsByName("bed_type");
+            if (bedType.length > 0) {
+                BED_TWIN = bedType[0].options[0].text;
+                BED_DOUBLE = bedType[0].options[1].text;
+            }
+            
+            var shabbatRoom = document.getElementsByName("shabbat_room");
+            if (shabbatRoom.length > 0) {
+                SHABBAT_NA = shabbatRoom[0].options[0].text;
+                SHABBAT_NO = shabbatRoom[0].options[1].text;
+                SHABBAT_YES = shabbatRoom[0].options[2].text;
+            }
+
+            var childProgram = document.getElementsByName("child_program");
+            if (childProgram.length > 0) {
+                CHILD_SHABBAT_NA = childProgram[0].options[0].text;
+                CHILD_SHABBAT_NO = childProgram[0].options[1].text;
+                CHILD_SHABBAT_YES = childProgram[0].options[2].text;
+                CHILD_NONE = childProgram[0].options[3].text;
+            }
         }
         
-        function updateRoomType(types) {
-            var roomType = document.getElementsByName("room_type")[0];
+        function updateComboBox(name, types) {
+            var curType = document.getElementsByName(name)[0];
             var i;
 
-            if (types.length == roomType.options.length) {
+            if (types.length == curType.options.length) {
                 var updateNeeded = false; 
-                for (i = roomType.options.length - 1 ; i >= 0 ; i--) {
-                    if (roomType.options[i].text != types[i]) {
+                for (i = curType.options.length - 1 ; i >= 0 ; i--) {
+                    if (curType.options[i].text != types[i]) {
                         updateNeeded = true;
                     }
                 }
@@ -350,80 +385,129 @@ class EM_Paypal_Limmud {
                     return;
             }
                 
-            for (i = roomType.options.length - 1 ; i >= 0 ; i--) {
-                roomType.remove(i);
+            for (i = curType.options.length - 1 ; i >= 0 ; i--) {
+                curType.remove(i);
             } 
 
             for (i = 0 ; i < types.length ; i++) {
-                roomType.options[roomType.options.length] = new Option(types[i]);
+                curType.options[curType.options.length] = new Option(types[i]);
             }
-            roomType.value = types[0];
+            curType.value = types[0];
+            curType.selectedIndex = 0;
+        }
+
+        function updateRoomType(types) {
+            updateComboBox("room_type", types);
         }
     
         $('select').change(function() {
-            var adults = document.getElementsByName("em_tickets[4][spaces]")[0]; 
-            var kids = document.getElementsByName("em_tickets[2][spaces]")[0];
-            var accomodation = document.getElementsByName("accomodation_type")[0];
-            var roomType = document.getElementsByName("room_type")[0];            
+            var adults = null; 
+            var kids = null;
+            var accomodation = null;
+            var roomType = null;
+            var self_accomodation = false;
             
-            if (adults == null) {
-                adults = document.getElementsByName("em_tickets[39][spaces]")[0]; 
-                kids = document.getElementsByName("em_tickets[40][spaces]")[0];
+            var els = document.getElementsByName("em_tickets[4][spaces]");
+            if (els.length > 0) {
+                adults = els[0];
+                kids = document.getElementsByName("em_tickets[2][spaces]")[0];
+            } else {
+                els = document.getElementsByName("em_tickets[39][spaces]");
+                if (els.length > 0) {
+                    adults = els[0];
+                    kids = document.getElementsByName("em_tickets[40][spaces]")[0];
+                } else {
+                    els = document.getElementsByName("em_tickets[91][spaces]");
+                    if (els.length > 0) {
+                        adults = els[0];
+                        kids = document.getElementsByName("em_tickets[92][spaces]")[0];
+                        self_accomodation = true;
+                    }
+                }
             }
+            
+            els = document.getElementsByName("accomodation_type");
+            if (els.length > 0) {
+                accomodation = els[0];
+            }
+            els = document.getElementsByName("room_type");
+            if (els.length > 0) {
+                roomType = els[0];
+            }
+            
             if (adults == null) {
                 return;
             }
             
             initGlobals();
 
-            if (accomodation.selectedIndex > 0) {
-                document.getElementsByName("room_label")[0].style.display = "none";
-                document.getElementsByClassName("input-field-bed_type")[0].style.display = "none";
-                document.getElementsByClassName("input-field-shabbat_area")[0].style.display = "none";
-                document.getElementsByClassName("input-field-bus_needed")[0].style.display = "none";
-
-                updateRoomType([ROOM_NONE]);                
-                document.getElementsByClassName("input-field-room_type")[0].style.display = "none";
-            } else {
-                document.getElementsByClassName("input-field-room_type")[0].style.display = "block";
-                document.getElementsByClassName("input-field-bed_type")[0].style.display = "block";
-                document.getElementsByClassName("input-field-shabbat_area")[0].style.display = "block";
-                document.getElementsByClassName("input-field-bus_needed")[0].style.display = "block";
-
-                document.getElementsByName("room_label")[0].style.display = "none";
-                if (kids.selectedIndex > 0) {
-                    updateRoomType([ROOM_FAMILY]);                
-                } else if (adults.selectedIndex == 1) {
-                    updateRoomType([ROOM_PLACE_IN_DOUBLE, ROOM_PLACE_IN_TRIPLE, ROOM_SINGLE]);                
-                    document.getElementsByName("room_label")[0].style.display = "block";
-                } else if (adults.selectedIndex == 2) {
-                    updateRoomType([ROOM_PLACE_IN_TRIPLE, ROOM_DOUBLE]);                
-                } else if (adults.selectedIndex == 3) {
-                    updateRoomType([ROOM_TRIPLE]);                
-                } else if (adults.selectedIndex == 4) {
-                    updateRoomType([ROOM_PLACE_IN_TRIPLE, ROOM_DOUBLE]);                
-                } else if (adults.selectedIndex == 5) {
-                    updateRoomType([ROOM_PLACE_IN_DOUBLE, ROOM_PLACE_IN_TRIPLE]);                
-                } else if (adults.selectedIndex == 6) {
-                    updateRoomType([ROOM_DOUBLE, ROOM_TRIPLE]);                
-                } else {
-                    updateRoomType([ROOM_FAMILY]);                
-                }
-
-                if (roomType.value == ROOM_PLACE_IN_TRIPLE) {
-                    document.getElementsByClassName("input-field-bed_type")[0].style.display = "none";
-                    document.getElementsByName("bed_type")[0].value = BED_DOUBLE;            
-                } else if (roomType.value == ROOM_SINGLE) {
-                    document.getElementsByClassName("input-field-bed_type")[0].style.display = "none";
-                    document.getElementsByName("bed_type")[0].value = BED_TWIN;            
-                } 
-                 
-                if ((roomType.value == ROOM_PLACE_IN_DOUBLE) || (roomType.value == ROOM_PLACE_IN_TRIPLE)) {
-                    document.getElementsByName("room_label")[0].style.display = "block";
-                } else {
+            if (!self_accomodation) {
+                if (accomodation && accomodation.selectedIndex > 0) {
                     document.getElementsByName("room_label")[0].style.display = "none";
+                    document.getElementsByClassName("input-field-bed_type")[0].style.display = "none";
+                    document.getElementsByClassName("input-field-bus_needed")[0].style.display = "none";
+                    document.getElementsByClassName("input-field-shabbat_room")[0].style.display = "none";
+    
+                    updateRoomType([ROOM_NONE]);
+                    document.getElementsByClassName("input-field-room_type")[0].style.display = "none";
+                } else {
+                    document.getElementsByClassName("input-field-room_type")[0].style.display = "block";
+                    document.getElementsByClassName("input-field-bed_type")[0].style.display = "block";
+                    document.getElementsByClassName("input-field-bus_needed")[0].style.display = "block";
+    
+                    document.getElementsByName("room_label")[0].style.display = "none";
+                    if (kids.selectedIndex > 0) {
+                        updateRoomType([ROOM_FAMILY]);
+                    } else if (adults.selectedIndex == 1) {
+                        updateRoomType([ROOM_PLACE_IN_DOUBLE, ROOM_PLACE_IN_TRIPLE, ROOM_SINGLE]);
+                    } else if (adults.selectedIndex == 2) {
+                        updateRoomType([ROOM_PLACE_IN_TRIPLE, ROOM_DOUBLE]);
+                    } else if (adults.selectedIndex == 3) {
+                        updateRoomType([ROOM_TRIPLE]);
+                    } else if (adults.selectedIndex == 4) {
+                        updateRoomType([ROOM_PLACE_IN_TRIPLE, ROOM_DOUBLE]);
+                    } else if (adults.selectedIndex == 5) {
+                        updateRoomType([ROOM_PLACE_IN_DOUBLE, ROOM_PLACE_IN_TRIPLE]);
+                    } else if (adults.selectedIndex == 6) {
+                        updateRoomType([ROOM_DOUBLE, ROOM_TRIPLE]);
+                    } else {
+                        updateRoomType([ROOM_FAMILY]);
+                    }
+    
+                    if (roomType.value == ROOM_PLACE_IN_TRIPLE) {
+                        document.getElementsByClassName("input-field-bed_type")[0].style.display = "none";
+                        updateComboBox("bed_type", [BED_DOUBLE]);
+                    } else if (roomType.value == ROOM_SINGLE) {
+                        document.getElementsByClassName("input-field-bed_type")[0].style.display = "none";
+                        updateComboBox("bed_type", [BED_TWIN]);
+                    } else {
+                        updateComboBox("bed_type", [BED_TWIN, BED_DOUBLE]);
+                    }
+    
+                    if ((roomType.value == ROOM_PLACE_IN_DOUBLE) || (roomType.value == ROOM_PLACE_IN_TRIPLE)) {
+                        document.getElementsByName("room_label")[0].style.display = "block";
+                        document.getElementsByClassName("input-field-shabbat_room")[0].style.display = "block";
+                        updateComboBox("shabbat_room", [SHABBAT_NO, SHABBAT_YES]);
+                    } else {
+                        document.getElementsByName("room_label")[0].style.display = "none";
+                        document.getElementsByClassName("input-field-shabbat_room")[0].style.display = "none";
+                        updateComboBox("shabbat_room", [SHABBAT_NA]);
+                    }
                 }
             }
+
+            if (kids) {
+                if (kids.selectedIndex > 0) {
+                    document.getElementsByName("child_label")[0].style.display = "block";
+                    document.getElementsByClassName("input-field-child_program")[0].style.display = "block";
+                    updateComboBox("child_program", [CHILD_SHABBAT_NO, CHILD_SHABBAT_YES, CHILD_NONE]);
+                } else {
+                    document.getElementsByName("child_label")[0].style.display = "none";
+                    document.getElementsByClassName("input-field-child_program")[0].style.display = "none";
+                    updateComboBox("child_program", [CHILD_SHABBAT_NA]);
+                }
+            } 
+
         }).change();
     <?php
 	}     
